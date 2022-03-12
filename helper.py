@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import numpy as np
 
 from config import *
 from scipy.spatial.distance import cosine
