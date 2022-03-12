@@ -1,59 +1,33 @@
 # -*- coding: utf-8 -*-
+import numpy as np
+
+from config import *
+from scipy.spatial.distance import cosine
 
 
+# from sklearn.metrics.pairwise import cosine_similarity
 
 
-def rank(bot_n, trie_res):
-    frequency_ = []
-    recents_ = []
-    for item in trie_res:
-        if item in bot_frequency[bot_n]:
-            frequency_.append(bot_frequency[bot_n][item])
-        else:
-            frequency_.append(0)
+def cos_simi_search(bot_n, q_v, threshold, size):
+    q_vs = bot_vecs[bot_n]
 
-        if item in bot_recents[bot_n]:
-            recents_.append(len(bot_recents[bot_n]) - bot_recents[bot_n].index(item))
-        else:
-            recents_.append(0)
-    df = pd.DataFrame({"trie_res": trie_res, "frequency": frequency_, "recents": recents_})
-    df.sort_values(by=["frequency", "recents"], ascending=False, inplace=True)
-    return df["trie_res"].values.tolist()
+    # 计算相似度矩阵较慢
+    # q_vs.insert(0, q_v)
+    # cos_simis = cosine_similarity(q_vs)[0][1:]
+    cos_simis = np.array([(1 - cosine(qv, q_v)) for qv in q_vs])
+
+    res_idxes = [i for i in range(len(cos_simis)) if cos_simis[i] >= threshold]
+    final_intents = bot_intents[bot_n][res_idxes]
+    final_scores = cos_simis[res_idxes]
+    intent_score_dict = dict(zip(final_intents, final_scores))
+    res = sorted(intent_score_dict.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)[:size]
+    return [{i[0]: i[1]} for i in res]
 
 
-def whoosh_search(bot_n, query, lim=10):
-    query = bot_qp[bot_n].parse(query)
-    print(query)
-
-    results = bot_searcher[bot_n].search(query, limit=lim)
-    # 还原源文本
-    res = []
-    for r in results:
-        res.extend(r.values())
-    # return res
-    return [bot_intents_whoosh_dict[bot_n][r] for r in res]
-
-
-def smart_hint(bot_n, query):
-    query = pre_process_4_trie(query)
-    result = bot_trie[bot_n].keys(query)
-    return list(result)
-
-
-def leven(bot_n, query, lim=10):
-    query1 = pre_process_4_trie(query)
-    query2 = get_pinyin(query1)
-
-    q1_res = process.extract(query1, bot_intents_dict[bot_n].keys(), limit=lim)
-    q2_res = process.extract(query2, bot_intents_dict[bot_n].keys(), limit=lim)
-
-    final_res = set([r[0] for r in (q1_res + q2_res) if r[1] >= 75])
-    return list(final_res)
-
-    # res = []
-    # for k in bot_intents_dict[bot_n].keys():
-    #     score1 = Levenshtein.ratio(k[:len(query1)], query1)
-    #     score2 = Levenshtein.ratio(k[:len(query2)], query2)
-    #     if score1 >= 0.8 or score2 >= 0.8:
-    #         res.append(k)
-    # return res
+def annoy_search(bot_n, q_v, threshold):
+    """
+    向量检索：
+    1. annoy向量检索在样本量百万量级以上时，才能显示真正威力，几千上万条数据，意义不大。
+    2. demo已实现，参见annoy_demo.py & annoy_common.py
+    """
+    pass

@@ -47,4 +47,4 @@ def pre_process(query):
 
     # 3. 去空格
     query = re.sub(r'\s+', ' ', query)
-    return query
+    return query.strip()
