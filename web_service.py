@@ -51,6 +51,35 @@ def search():
     return jsonify({'code': 0, 'msg': 'success', 'data': final_res})
 
 
+@app.route('/intent_integrity', methods=['GET', 'POST'])
+def intent_integrity():
+    """
+    意图语料完整度
+    input json:
+    {
+        "intents": ["xxxxxx", "xxxxxx", "xxxxxx", "xxxxxx"]
+    }
+
+    return:
+    {   'code': 0,
+        'msg': 'success',
+        'score': o.95
+    }
+    """
+    ori_rd = request.get_data(as_text=True)
+    ori_rd = ori_rd.replace('\\"', ',')
+    ori_rd = ori_rd.replace('\\', '')
+    resq_data = json.loads(ori_rd)
+
+    intents = resq_data["intents"]
+    intents = [pre_process(i) for i in intents if pre_process(i) != ""]
+    if len(intents) == 0:
+        return {'code': -1, 'msg': 'input is null', 'score': 0}
+
+    final_res = integrity(intents)
+    return {'code': 0, 'msg': 'success', 'score': final_res}
+
+
 @app.route('/refresh', methods=['GET', 'POST'])
 def refresh():
     """

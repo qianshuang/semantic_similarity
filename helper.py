@@ -2,9 +2,7 @@
 
 from config import *
 from scipy.spatial.distance import cosine
-
-
-# from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 def cos_simi_search(bot_n, q_v, threshold, size):
@@ -21,6 +19,13 @@ def cos_simi_search(bot_n, q_v, threshold, size):
     intent_score_dict = dict(zip(final_intents, final_scores))
     res = sorted(intent_score_dict.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)[:size]
     return [{i[0]: i[1]} for i in res]
+
+
+def integrity(intents):
+    cnt = len(intents)
+    q_vs = get_bert_sent_vecs(intents)
+    cos_simi_m = cosine_similarity(q_vs)
+    return (np.sum(cos_simi_m) - cnt) / (cnt * (cnt - 1))
 
 
 def annoy_search(bot_n, q_v, threshold):
