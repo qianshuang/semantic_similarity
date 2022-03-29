@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import pickle
 import re
 import string
 from zhon.hanzi import punctuation
@@ -48,3 +49,17 @@ def pre_process(query):
     # 3. 去空格
     query = re.sub(r'\s+', ' ', query)
     return query.strip()
+
+
+def del_dict_key(dic, key):
+    if key in dic:
+        del dic[key]
+
+
+def r_set_pickled(r, name, key, value):
+    return r.hset(name, key, pickle.dumps(value))
+
+
+def r_get_pickled(r, name, key):
+    if r.hexists(name, key):
+        return pickle.loads(r.hget(name, key))

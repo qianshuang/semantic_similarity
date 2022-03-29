@@ -18,7 +18,6 @@
 # print(len(vec))
 # print(len(vec[0]))
 # print(np.shape(vec))
-import numpy as np
 
 # last2 = np.array([[[1, 2, 3], [4, 5, 6], [7, 8, 9]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]])
 # print(last2[:, 0, :])
@@ -35,7 +34,13 @@ import numpy as np
 #     intent_vec_dict = json.load(f)
 # print(intent_vec_dict)
 
-from scipy.spatial.distance import cosine
+# from scipy.spatial.distance import cosine
+#
+# cos_simis = [(1 - cosine(qv, [2, 3, 4])) for qv in [[1, 2, 3], [4, 5, 6], [7, 8, 9]]]
+# print(cos_simis)
 
-cos_simis = [(1 - cosine(qv, [2, 3, 4])) for qv in [[1, 2, 3], [4, 5, 6], [7, 8, 9]]]
-print(cos_simis)
+import redis
+from common import *
+
+r = redis.Redis(db=1)
+print(r_get_pickled(r, "111", "111"))

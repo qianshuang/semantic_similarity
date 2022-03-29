@@ -5,6 +5,19 @@ from scipy.spatial.distance import cosine
 from sklearn.metrics.pairwise import cosine_similarity
 
 
+def rsync(bot_n):
+    bot_version = r.hget("bot_version", bot_n)
+    bot_process_version = r.hget("bot_version&" + bot_n, str(os.getpid()))
+
+    if bot_version != bot_process_version:
+        print("starting rsync...")
+        bot_intents[bot_n] = r_get_pickled(r, "bot_intents", bot_n)
+        bot_intent_vecs[bot_n] = r_get_pickled(r, "bot_intent_vecs", bot_n)
+        bot_vecs[bot_n] = r_get_pickled(r, "bot_vecs", bot_n)
+
+        r.hset("bot_version&" + bot_n, str(os.getpid()), int(bot_version))
+
+
 def cos_simi_search(bot_n, q_v, threshold, size):
     q_vs = bot_vecs[bot_n]
 
@@ -27,11 +40,9 @@ def integrity(intents):
     cos_simi_m = cosine_similarity(q_vs)
     return (np.sum(cos_simi_m) - cnt) / (cnt * (cnt - 1))
 
-
-def annoy_search(bot_n, q_v, threshold):
-    """
-    向量检索：
-    1. annoy向量检索在样本量百万量级以上时，才能显示真正威力，几千上万条数据，意义不大。
-    2. demo已实现，参见annoy_demo.py & annoy_common.py
-    """
-    pass
+# def annoy_search(bot_n, q_v, threshold):
+#     """
+#     向量检索：
+#     1. annoy向量检索在样本量百万量级以上时，才能显示真正威力，几千上万条数据，意义不大。
+#     2. demo已实现，参见annoy_demo.py & annoy_common.py
+#     """
