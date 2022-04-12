@@ -5,6 +5,7 @@ from bert import tokenization
 from bert import modeling
 
 max_seq_length = 128
+batch_size = 1024  # 计算bert向量时，批量传入的size。按需调整，设置到最大限度，尽量批量调用模型，提高效率和性能
 
 vocab_file = "bert/uncased_L-12_H-768_A-12/vocab.txt"
 tokenizer = tokenization.FullTokenizer(vocab_file=vocab_file, do_lower_case=True)
@@ -69,7 +70,7 @@ def get_bert_sent_vecs(sent_list):
     sent_list = [sent_list] if isinstance(sent_list, str) else sent_list
 
     # 分批处理
-    sent_batch_list = [sent_list[i:i + 128] for i in range(0, len(sent_list), 128)]
+    sent_batch_list = [sent_list[i:i + batch_size] for i in range(0, len(sent_list), batch_size)]
     for sent_list in sent_batch_list:
         feed_dict = {input_ids: [], input_mask: [], segment_ids: []}
         for line in sent_list:
