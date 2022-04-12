@@ -4,7 +4,7 @@ import redis
 import redis_lock
 
 import os
-
+import numpy as np
 from common import *
 from bert_common import *
 

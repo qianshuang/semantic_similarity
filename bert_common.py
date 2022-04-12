@@ -65,12 +65,19 @@ def convert_single_example(text):
 
 
 def get_bert_sent_vecs(sent_list):
-    feed_dict = {input_ids: [], input_mask: [], segment_ids: []}
-    for line in sent_list:
-        input_ids_, input_mask_, segment_ids_ = convert_single_example(line)
-        feed_dict[input_ids].append(input_ids_)
-        feed_dict[input_mask].append(input_mask_)
-        feed_dict[segment_ids].append(segment_ids_)
-    last2 = sess.run(encoder_layer, feed_dict=feed_dict)  # (batch_size, max_len, 768)
-    q_v = last2[:, 0, :]  # (batch_size, 768)
-    return list(q_v)
+    res = []
+    sent_list = [sent_list] if isinstance(sent_list, str) else sent_list
+
+    # 分批处理
+    sent_batch_list = [sent_list[i:i + 128] for i in range(0, len(sent_list), 128)]
+    for sent_list in sent_batch_list:
+        feed_dict = {input_ids: [], input_mask: [], segment_ids: []}
+        for line in sent_list:
+            input_ids_, input_mask_, segment_ids_ = convert_single_example(line)
+            feed_dict[input_ids].append(input_ids_)
+            feed_dict[input_mask].append(input_mask_)
+            feed_dict[segment_ids].append(segment_ids_)
+        last2 = sess.run(encoder_layer, feed_dict=feed_dict)  # (batch_size, max_len, 768)
+        q_v = list(last2[:, 0, :])  # (batch_size, 768)
+        res.extend(q_v)
+    return res
