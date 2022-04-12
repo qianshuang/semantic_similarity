@@ -17,7 +17,7 @@ def search():
     input json:
     {
         "bot_name": "xxxxxx",
-        "threshold": 0.95,  # 相似度阈值
+        "threshold": 0.95,  # 相似度阈值，默认0.8
         "query": "xxxxxx",  # 用户query
         "size": 10          # 最大返回大小，默认5
     }
@@ -36,7 +36,7 @@ def search():
     query = resq_data["query"].strip()
     bot_n = resq_data["bot_name"].strip()
     size = int(resq_data["size"]) if "size" in resq_data else 5
-    threshold = float(resq_data["threshold"]) if "threshold" in resq_data else 0.9
+    threshold = float(resq_data["threshold"]) if "threshold" in resq_data else 0.8
 
     query = pre_process(query)
     if query == "":
@@ -78,6 +78,8 @@ def intent_integrity():
     intents = [pre_process(i) for i in intents if pre_process(i) != ""]
     if len(intents) == 0:
         return {'code': -1, 'msg': 'input is null', 'score': 0}
+    elif len(intents) == 1:
+        return {'code': 0, 'msg': 'success', 'score': 1}
 
     final_res = integrity(intents)
     return {'code': 0, 'msg': 'success', 'score': final_res}

@@ -4,7 +4,6 @@ import redis
 import redis_lock
 
 import os
-import numpy as np
 
 from common import *
 from bert_common import *
@@ -31,15 +30,9 @@ def build_bot_intents_dict(bot_name):
 
 
 def build_bot_vecs_dict(bot_name):
-    intent_vecs = []
-    intent_vec_dict = {}
-
-    for intent in bot_intents[bot_name]:
-        intent_ = pre_process(intent)
-        q_v = get_bert_sent_vecs(intent_)[0]
-
-        intent_vec_dict[intent_] = q_v
-        intent_vecs.append(q_v)
+    proed_intents = [pre_process(i) for i in bot_intents[bot_name] if pre_process(i) != ""]
+    intent_vecs = get_bert_sent_vecs(proed_intents)
+    intent_vec_dict = dict(zip(proed_intents, intent_vecs))
 
     bot_intent_vecs[bot_name] = intent_vec_dict
     bot_vecs[bot_name] = intent_vecs

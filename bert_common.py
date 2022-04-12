@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import numpy as np
 import tensorflow as tf
 from bert import tokenization
 from bert import modeling
@@ -71,6 +72,6 @@ def get_bert_sent_vecs(sent_list):
         feed_dict[input_ids].append(input_ids_)
         feed_dict[input_mask].append(input_mask_)
         feed_dict[segment_ids].append(segment_ids_)
-    last2 = sess.run(encoder_layer, feed_dict=feed_dict)  # (max_len, 1, 768)
-    q_v = last2[:, 0, :]
+    last2 = sess.run(encoder_layer, feed_dict=feed_dict)  # (batch_size, max_len, 768)
+    q_v = last2[:, 0, :]  # (batch_size, 768)
     return list(q_v)
