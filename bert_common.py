@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import tensorflow as tf
 from bert import tokenization
 from bert import modeling
