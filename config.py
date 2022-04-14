@@ -77,7 +77,7 @@ if global_lock.acquire(blocking=False):
 def run_recycle():
     for _bot_name_ in os.listdir(BOT_SRC_DIR):
         bot_ex = r.hget("bot_invoke", _bot_name_)
-        if bot_ex is not None and time.time() - float() > bot_expire_time:
+        if bot_ex is not None and time.time() - float(bot_ex) > bot_expire_time:
             print(_bot_name_, 'starting recycle...')
             del_dict_key(bot_intents, _bot_name_)
             del_dict_key(bot_intent_vecs, _bot_name_)
