@@ -42,6 +42,9 @@ def search():
     if query == "":
         return {'code': 0, 'msg': 'success', 'data': []}
 
+    # 刷新bot调用时间
+    r.hset("bot_invoke", bot_n, time.time())
+
     # 同步Redis缓存
     rsync(bot_n)
 
@@ -120,6 +123,7 @@ def refresh():
             r.hdel("bot_intents", bot_n)
             r.hdel("bot_intent_vecs", bot_n)
             r.hdel("bot_vecs", bot_n)
+            r.hdel("bot_invoke", bot_n)
             del_dict_key(bot_intents, bot_n)
             del_dict_key(bot_intent_vecs, bot_n)
             del_dict_key(bot_vecs, bot_n)

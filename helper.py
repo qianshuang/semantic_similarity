@@ -9,7 +9,7 @@ def rsync(bot_n):
     bot_version = r.hget("bot_version", bot_n)
     bot_process_version = r.hget("bot_version&" + bot_n, str(os.getpid()))
 
-    if bot_version != bot_process_version:
+    if bot_version != bot_process_version or bot_n not in bot_intents or bot_n not in bot_intent_vecs or bot_n not in bot_vecs:
         print("starting rsync...")
         bot_intents[bot_n] = r_get_pickled(r, "bot_intents", bot_n)
         bot_intent_vecs[bot_n] = r_get_pickled(r, "bot_intent_vecs", bot_n)
@@ -36,7 +36,20 @@ def cos_simi_search(bot_n, q_v, threshold, size):
 
 def integrity(intents):
     cnt = len(intents)
-    q_vs = get_bert_sent_vecs(intents)
+
+    # 缓存取数
+    cache_sent_vecs = {}
+    for bn in os.listdir(BOT_SRC_DIR):
+        if bn in bot_intent_vecs:
+            cache_sent_vecs.update(bot_intent_vecs[bn])
+
+    uncache_sents = [i for i in intents if i not in cache_sent_vecs]
+    uncache_vecs = get_bert_sent_vecs(uncache_sents)
+    uncache_sent_vecs = dict(zip(uncache_sents, uncache_vecs))
+
+    cache_sent_vecs.update(uncache_sent_vecs)
+    q_vs = [cache_sent_vecs[i] for i in intents]
+
     cos_simi_m = cosine_similarity(q_vs)
     return (np.sum(cos_simi_m) - cnt) / (cnt * (cnt - 1))
 

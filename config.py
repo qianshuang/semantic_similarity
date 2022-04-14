@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import threading
+import time
+
 import redis
 import redis_lock
 
 import os
 import numpy as np
+import schedule
+
 from common import *
 from bert_common import *
 
@@ -16,6 +21,9 @@ bot_vecs = {}
 
 r = redis.Redis(db=1)
 global_lock = redis_lock.Lock(r, "global_lock")
+
+# 设置bot expire time，3天未被调用则自动移除bot，释放内存空间
+bot_expire_time = 3 * 24 * 3600
 
 
 def build_bot_intents_dict(bot_name):
@@ -63,3 +71,27 @@ if global_lock.acquire(blocking=False):
         # build bot vec dict
         build_bot_vecs_dict(bot_na)
         print(bot_na, "vecs dict finished building...")
+
+
+# 每天回收不常被使用bot内存
+def run_recycle():
+    for _bot_name_ in os.listdir(BOT_SRC_DIR):
+        bot_ex = r.hget("bot_invoke", _bot_name_)
+        if bot_ex is not None and time.time() - float() > bot_expire_time:
+            print(_bot_name_, 'starting recycle...')
+            del_dict_key(bot_intents, _bot_name_)
+            del_dict_key(bot_intent_vecs, _bot_name_)
+            del_dict_key(bot_vecs, _bot_name_)
+
+
+schedule.every().day.do(run_recycle)
+
+
+# 多线程调度
+def run_schedule():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
+threading.Thread(target=run_schedule).start()

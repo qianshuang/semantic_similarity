@@ -38,9 +38,12 @@
 #
 # cos_simis = [(1 - cosine(qv, [2, 3, 4])) for qv in [[1, 2, 3], [4, 5, 6], [7, 8, 9]]]
 # print(cos_simis)
+import datetime
+import time
 
 import redis
 from common import *
 
+#
 r = redis.Redis(db=1)
 print(r_get_pickled(r, "111", "111"))
